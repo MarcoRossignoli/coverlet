@@ -4,5 +4,23 @@ steps:
     version: 2.2.300
   displayName: Install .NET Core SDK
 
-- script: dotnet msbuild build.proj /p:Configuration=$(buildConfiguration)
-  displayName: 'Run Build'
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: 'coverlet.sln'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: 'coverlet.sln'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: 'coverlet.sln'
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Include=[coverlet.*]*'

@@ -1,0 +1,31 @@
+pool:
+  vmImage: 'windows-2019'
+steps:
+- task: UseDotNet@2
+  inputs:
+    version: 2.2.300
+  displayName: Install .NET Core SDK
+- script: dotnet pack coverlet.sln -c Release /p:PublicRelease=true
+  displayName: 'Generate artifatcs official'
+  continueOnError: "true"
+- script: dotnet pack coverlet.sln -c Release /p:PublicRelease=false
+  displayName: 'Generate artifatcs pre-release'
+  continueOnError: "true"
+- task: CopyFiles@2
+  displayName: Collect packages live
+  inputs:
+    SourceFolder: build\Release\live
+    Contents: '*.nupkg'
+    TargetFolder: $(Build.ArtifactStagingDirectory)\Packages\live
+- task: CopyFiles@2
+  displayName: Collect packages nightly
+  inputs:
+    SourceFolder: build\Release\nightly
+    Contents: '*.nupkg'
+    TargetFolder: $(Build.ArtifactStagingDirectory)\Packages\nightly
+- task: PublishBuildArtifacts@1
+  displayName: Publish packages as build artifacts
+  inputs:
+    PathtoPublish: $(Build.ArtifactStagingDirectory)\Packages
+    ArtifactName: Packages
+    publishLocation: Container

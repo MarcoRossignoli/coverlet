@@ -7,7 +7,7 @@ trigger:
 jobs:
 - job: Windows
   displayName: Windows
-  continueOnError: true
+  continueOnError: "true"
   strategy:
     matrix:
       Debug:
@@ -18,23 +18,10 @@ jobs:
     vmImage: 'windows-2019'
   steps:
   - template: build.yml
-  - task: CopyFiles@2
-    displayName: Collect packages
-    inputs:
-      SourceFolder: build\$(BuildConfiguration)
-      Contents: '*.nupkg'
-      TargetFolder: $(Build.ArtifactStagingDirectory)\Packages
-  - task: PublishBuildArtifacts@1
-    displayName: Publish packages as build artifacts
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)\Packages
-      ArtifactName: Packages
-      publishLocation: Container
-    condition: eq(variables['BuildConfiguration'], 'Release')
-
+  
 - job: macOS
   displayName: macOS
-  continueOnError: true
+  continueOnError: "true"
   strategy:
     matrix:
       Debug:
@@ -48,7 +35,7 @@ jobs:
 
 - job: Linux
   displayName: Linux
-  continueOnError: true
+  continueOnError: "true"
   strategy:
     matrix:
       Debug:

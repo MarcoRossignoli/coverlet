@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
+  <Choose>
+    <When Condition="'$(PublicRelease)'==''">
+            <PropertyGroup>
+                <DeployEnv>live</DeployEnv>
+                <PublicRelease>true</PublicRelease>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(PublicRelease)'=='true'">
+            <PropertyGroup>
+                <DeployEnv>live</DeployEnv>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(PublicRelease)'=='false'">
+            <PropertyGroup>
+                <DeployEnv>nightly</DeployEnv>
+            </PropertyGroup>
+        </When>
+  </Choose>
   <PropertyGroup>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)build\$(Configuration)\</PackageOutputPath>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)build\$(Configuration)\$(DeployEnv)</PackageOutputPath>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.38" PrivateAssets="all" />
   </ItemGroup>
