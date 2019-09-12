@@ -1,6 +1,6 @@
 # Troubleshooting
 
-## Msbuild Integration
+## Msbuild integration
 
 1) Generate verbose log
 ```
@@ -58,6 +58,11 @@ Hits file:'C:\Users\Marco\AppData\Local\Temp\coverlet.core_703263e9-21f0-4d1c-9c
 +---------+--------+--------+--------+
 | Average | 4,44%  | 3,455% | 5,66%  |
 +---------+--------+--------+--------+
+```
+## Collectors integration
+
+```
+dotnet test --collect:"XPlat Code Coverage" --settings runsettings --diag:log.txt
 ```
 
 ## Use local build(no collectors)
