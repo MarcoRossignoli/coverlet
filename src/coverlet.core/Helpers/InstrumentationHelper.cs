@@ -132,7 +132,7 @@ namespace Coverlet.Core.Helpers
             return true;
         }
 
-        private static string GetFilePath(string module, string path)
+        private string GetFilePath(string module, string path)
         {
             // DeterministicSourcePaths=true
             if (path.StartsWith("/_/"))
