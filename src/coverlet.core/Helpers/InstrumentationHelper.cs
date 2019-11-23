@@ -159,7 +159,6 @@ namespace Coverlet.Core.Helpers
             using (var moduleStream = _fileSystem.OpenRead(module))
             using (var peReader = new PEReader(moduleStream))
             {
-                var r = peReader.ReadDebugDirectory();
                 foreach (var entry in peReader.ReadDebugDirectory())
                 {
                     if (entry.Type == DebugDirectoryEntryType.CodeView)
