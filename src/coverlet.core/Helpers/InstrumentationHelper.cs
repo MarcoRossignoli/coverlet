@@ -137,6 +137,7 @@ namespace Coverlet.Core.Helpers
             // DeterministicSourcePaths=true
             if (path.StartsWith("/_/"))
             {
+                // We search path starting from deeper folder
                 string relativePath = path.Substring(3);
                 for (int lastSeparator = module.LastIndexOf(Path.DirectorySeparatorChar); lastSeparator != -1; lastSeparator = module.LastIndexOf(Path.DirectorySeparatorChar))
                 {
