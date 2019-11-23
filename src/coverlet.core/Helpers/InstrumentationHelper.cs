@@ -87,7 +87,7 @@ namespace Coverlet.Core.Helpers
                             return true;
                         }
 
-                        return _fileSystem.Exists(codeViewData.Path);
+                        return _fileSystem.Exists(Path.Combine(Path.GetDirectoryName(module), Path.GetFileName(codeViewData.Path)));
                     }
                 }
 
@@ -138,12 +138,13 @@ namespace Coverlet.Core.Helpers
             using (var moduleStream = _fileSystem.OpenRead(module))
             using (var peReader = new PEReader(moduleStream))
             {
+                var r = peReader.ReadDebugDirectory();
                 foreach (var entry in peReader.ReadDebugDirectory())
                 {
                     if (entry.Type == DebugDirectoryEntryType.CodeView)
                     {
                         var codeViewData = peReader.ReadCodeViewDebugDirectoryData(entry);
-                        using Stream pdbStream = _fileSystem.NewFileStream(codeViewData.Path, FileMode.Open);
+                        using Stream pdbStream = _fileSystem.NewFileStream(Path.Combine(Path.GetDirectoryName(module), Path.GetFileName(codeViewData.Path)), FileMode.Open, FileAccess.Read);
                         using MetadataReaderProvider metadataReaderProvider = MetadataReaderProvider.FromPortablePdbStream(pdbStream);
                         MetadataReader metadataReader = null;
                         try
