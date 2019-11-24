@@ -3,6 +3,7 @@ using System.IO;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Coverlet.Core.Helpers.Tests
 {
@@ -143,7 +144,7 @@ namespace Coverlet.Core.Helpers.Tests
         [Fact]
         public void TestIsTypeExcludedNamespace()
         {
-            var result = _instrumentationHelper.IsTypeExcluded("Module.dll", "Namespace.Namespace.Type", new string[]{ "[Module]Namespace.Namespace.*" });
+            var result = _instrumentationHelper.IsTypeExcluded("Module.dll", "Namespace.Namespace.Type", new string[] { "[Module]Namespace.Namespace.*" });
             Assert.True(result);
 
             result = _instrumentationHelper.IsTypeExcluded("Module.dll", "Namespace.Namespace.TypeB", new string[] { "[Module]Namespace.Namespace.*" });
@@ -223,6 +224,29 @@ namespace Coverlet.Core.Helpers.Tests
 
             // Same number of modules found when using a relative path
             Assert.Equal(currentDirModules.Length, relativePathModules.Length);
+        }
+
+        [Fact]
+        public void TestRegexDeterministicSourcePaths()
+        {
+            var regEx = new Regex(@"^/_\d{1,}/|^/_/", RegexOptions.Compiled);
+
+            Assert.Matches(regEx, @"/_/directory");
+            Assert.Matches(regEx, @"/_1/directory");
+            Assert.Matches(regEx, @"/_2/directory");
+            Assert.Matches(regEx, @"/_10/directory");
+            Assert.Matches(regEx, @"/_10/");
+
+            Assert.DoesNotMatch(regEx, @"//");
+            Assert.DoesNotMatch(regEx, @"C:/_10/");
+            Assert.DoesNotMatch(regEx, @"_10/directory");
+            Assert.DoesNotMatch(regEx, @"/_10");
+            Assert.DoesNotMatch(regEx, @"_10/");
+            Assert.DoesNotMatch(regEx, @"_1/");
+            Assert.DoesNotMatch(regEx, @"/_1");
+            Assert.DoesNotMatch(regEx, @"\_10directory");
+            Assert.DoesNotMatch(regEx, @"/directory");
+            Assert.DoesNotMatch(regEx, @"c:\directory");
         }
 
         public static IEnumerable<object[]> ValidModuleFilterData =>

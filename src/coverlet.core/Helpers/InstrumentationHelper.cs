@@ -17,6 +17,7 @@ namespace Coverlet.Core.Helpers
         private readonly ConcurrentDictionary<string, string> _backupList = new ConcurrentDictionary<string, string>();
         private readonly IRetryHelper _retryHelper;
         private readonly IFileSystem _fileSystem;
+        private readonly Regex IsDeterministicSourcePaths = new Regex(@"^/_\d{1,}/|^/_/", RegexOptions.Compiled);
 
         public InstrumentationHelper(IProcessExitHandler processExitHandler, IRetryHelper retryHelper, IFileSystem fileSystem)
         {
@@ -135,7 +136,7 @@ namespace Coverlet.Core.Helpers
         private string GetFilePath(string module, string path)
         {
             // DeterministicSourcePaths=true
-            if (path.StartsWith("/_/"))
+            if (IsDeterministicSourcePaths.IsMatch(path))
             {
                 // We search path starting from deeper folder
                 string relativePath = path.Substring(3);
