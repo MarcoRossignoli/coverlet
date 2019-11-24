@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+
 using Coverlet.Core.Abstracts;
 using Coverlet.Core.Helpers;
 using Coverlet.Core.Samples.Tests;
@@ -16,6 +18,13 @@ namespace Coverlet.Core.Tests
     {
         private readonly InstrumentationHelper _instrumentationHelper = new InstrumentationHelper(new ProcessExitHandler(), new RetryHelper(), new FileSystem());
         private readonly Mock<ILogger> _mockLogger = new Mock<ILogger>();
+
+        private DirectoryInfo GetTempDirectoryUnderBin()
+        {
+            string currentAsmPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string tmpDir = Path.Combine(currentAsmPath, "tmp");
+            return Directory.CreateDirectory(Path.Combine(tmpDir, Guid.NewGuid().ToString()));
+        }
 
         [Fact]
         public void TestCoverage()
@@ -65,7 +74,7 @@ namespace Coverlet.Core.Tests
             string module = GetType().Assembly.Location;
             string pdb = Path.Combine(Path.GetDirectoryName(module), Path.GetFileNameWithoutExtension(module) + ".pdb");
 
-            var directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+            var directory = GetTempDirectoryUnderBin();
 
             File.Copy(module, Path.Combine(directory.FullName, Path.GetFileName(module)), true);
             File.Copy(pdb, Path.Combine(directory.FullName, Path.GetFileName(pdb)), true);
