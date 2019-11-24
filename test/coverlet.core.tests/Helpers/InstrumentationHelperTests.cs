@@ -233,11 +233,13 @@ namespace Coverlet.Core.Helpers.Tests
 
             Assert.Matches(regEx, @"/_/directory");
             Assert.Matches(regEx, @"/_1/directory");
-            Assert.Matches(regEx, @"/_2/directory");
+            Assert.Matches(regEx, @"/_2/directory/file");
             Assert.Matches(regEx, @"/_10/directory");
             Assert.Matches(regEx, @"/_10/");
+            Assert.Matches(regEx, @"/_100/");
 
             Assert.DoesNotMatch(regEx, @"//");
+            Assert.DoesNotMatch(regEx, @"\\");
             Assert.DoesNotMatch(regEx, @"C:/_10/");
             Assert.DoesNotMatch(regEx, @"_10/directory");
             Assert.DoesNotMatch(regEx, @"/_10");
