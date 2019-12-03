@@ -14,6 +14,7 @@
       IncludeTestAssembly="$(IncludeTestAssembly)"
       SingleHit="$(SingleHit)"
       MergeWith="$(MergeWith)"
+      PathMap="$(PathMap)"
       UseSourceLink="$(UseSourceLink)" >
       <Output TaskParameter="InstrumenterState" PropertyName="InstrumenterState"/>
     </Coverlet.MSbuild.Tasks.InstrumentationTask>

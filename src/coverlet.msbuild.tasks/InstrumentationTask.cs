@@ -22,6 +22,7 @@ namespace Coverlet.MSbuild.Tasks
         private bool _singleHit;
         private string _mergeWith;
         private bool _useSourceLink;
+        private string _pathMap;
         private ITaskItem _instrumenterState;
         private readonly MSBuildLogger _logger;
 
@@ -86,6 +87,12 @@ namespace Coverlet.MSbuild.Tasks
             set { _useSourceLink = value; }
         }
 
+        public string PathMap
+        {
+            get { return _pathMap; }
+            set { _pathMap = value; }
+        }
+
         [Output]
         public ITaskItem InstrumenterState
         {
@@ -121,12 +128,14 @@ namespace Coverlet.MSbuild.Tasks
 
             try
             {
+                IServiceProvider serviceProvider = ServiceProviderFactory.Build(_pathMap);
+
                 var includeFilters = _include?.Split(',');
                 var includeDirectories = _includeDirectory?.Split(',');
                 var excludeFilters = _exclude?.Split(',');
                 var excludedSourceFiles = _excludeByFile?.Split(',');
                 var excludeAttributes = _excludeByAttribute?.Split(',');
-                var fileSystem = DependencyInjection.Current.GetService<IFileSystem>();
+                var fileSystem = serviceProvider.GetService<IFileSystem>();
 
                 Coverage coverage = new Coverage(_path,
                     includeFilters,
@@ -139,7 +148,7 @@ namespace Coverlet.MSbuild.Tasks
                     _mergeWith,
                     _useSourceLink,
                     _logger,
-                    DependencyInjection.Current.GetService<IInstrumentationHelper>(),
+                    serviceProvider.GetService<IInstrumentationHelper>(),
                     fileSystem);
 
                 CoveragePrepareResult prepareResult = coverage.PrepareModules();

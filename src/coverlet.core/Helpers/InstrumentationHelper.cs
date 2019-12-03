@@ -18,13 +18,23 @@ namespace Coverlet.Core.Helpers
         private readonly ConcurrentDictionary<string, string> _backupList = new ConcurrentDictionary<string, string>();
         private readonly IRetryHelper _retryHelper;
         private readonly IFileSystem _fileSystem;
-        private readonly Regex IsDeterministicSourcePaths = new Regex(@"^/_\d{1,}/|^/_/", RegexOptions.Compiled);
+        private readonly List<(string path, string prefix)> _pathMap;
 
-        public InstrumentationHelper(IProcessExitHandler processExitHandler, IRetryHelper retryHelper, IFileSystem fileSystem)
+        public InstrumentationHelper(IProcessExitHandler processExitHandler, IRetryHelper retryHelper, IFileSystem fileSystem, string pathMap = null)
         {
             processExitHandler.Add((s, e) => RestoreOriginalModules());
             _retryHelper = retryHelper;
             _fileSystem = fileSystem;
+
+            if (!string.IsNullOrEmpty(pathMap))
+            {
+                _pathMap = new List<(string path, string prefix)>();
+                foreach (var map in pathMap.Split(';'))
+                {
+                    string[] prefixPath = map.Split('=');
+                    _pathMap.Add((prefixPath[0], prefixPath[1]));
+                }
+            }
         }
 
         public string[] GetCoverableModules(string module, string[] directories, bool includeTestAssembly)
@@ -71,6 +81,23 @@ namespace Coverlet.Core.Helpers
                 .ToArray();
         }
 
+        private string GetNormalizedPath(string path)
+        {
+            if (_pathMap is null)
+            {
+                return path;
+            }
+
+            foreach (var prefixMap in _pathMap)
+            {
+                if (path.StartsWith(prefixMap.prefix))
+                {
+                    return path.Replace(prefixMap.prefix, prefixMap.path);
+                }
+            }
+            return path;
+        }
+
         public bool HasPdb(string module, out bool embedded)
         {
             embedded = false;
@@ -89,7 +116,7 @@ namespace Coverlet.Core.Helpers
                             return true;
                         }
 
-                        return _fileSystem.Exists(GetFilePath(module, codeViewData.Path));
+                        return _fileSystem.Exists(GetNormalizedPath(codeViewData.Path));
                     }
                 }
 
@@ -113,7 +140,7 @@ namespace Coverlet.Core.Helpers
                             foreach (DocumentHandle docHandle in metadataReader.Documents)
                             {
                                 Document document = metadataReader.GetDocument(docHandle);
-                                string docName = metadataReader.GetString(document.Name);
+                                string docName = GetNormalizedPath(metadataReader.GetString(document.Name));
 
                                 // We verify all docs and return false if not all are present in local
                                 // We could have false negative if doc is not a source
@@ -134,28 +161,6 @@ namespace Coverlet.Core.Helpers
             return true;
         }
 
-        private string GetFilePath(string module, string path)
-        {
-            // DeterministicSourcePaths=true
-            if (IsDeterministicSourcePaths.IsMatch(path))
-            {
-                // We search path starting from deeper folder
-                string relativePath = path.Substring(3);
-                for (int lastSeparator = module.LastIndexOf(Path.DirectorySeparatorChar); lastSeparator != -1; lastSeparator = module.LastIndexOf(Path.DirectorySeparatorChar))
-                {
-                    module = module.Substring(0, lastSeparator);
-                    string newPath = Path.Combine(module, relativePath);
-                    if (File.Exists(newPath))
-                    {
-                        return newPath;
-                    }
-                }
-            }
-
-            // If we cannot find file we return path as is
-            return path;
-        }
-
         public bool PortablePdbHasLocalSource(string module, out string firstNotFoundDocument)
         {
             firstNotFoundDocument = "";
@@ -167,7 +172,7 @@ namespace Coverlet.Core.Helpers
                     if (entry.Type == DebugDirectoryEntryType.CodeView)
                     {
                         var codeViewData = peReader.ReadCodeViewDebugDirectoryData(entry);
-                        using Stream pdbStream = _fileSystem.NewFileStream(GetFilePath(module, codeViewData.Path), FileMode.Open, FileAccess.Read);
+                        using Stream pdbStream = _fileSystem.NewFileStream(GetNormalizedPath(codeViewData.Path), FileMode.Open, FileAccess.Read);
                         using MetadataReaderProvider metadataReaderProvider = MetadataReaderProvider.FromPortablePdbStream(pdbStream);
                         MetadataReader metadataReader = null;
                         try
@@ -183,7 +188,7 @@ namespace Coverlet.Core.Helpers
                         foreach (DocumentHandle docHandle in metadataReader.Documents)
                         {
                             Document document = metadataReader.GetDocument(docHandle);
-                            string docName = GetFilePath(module, metadataReader.GetString(document.Name));
+                            string docName = GetNormalizedPath(metadataReader.GetString(document.Name));
 
                             // We verify all docs and return false if not all are present in local
                             // We could have false negative if doc is not a source
