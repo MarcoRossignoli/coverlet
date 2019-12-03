@@ -11,7 +11,6 @@ using Coverlet.Tests.RemoteExecutor;
 using Moq;
 using Xunit;
 
-
 namespace Coverlet.Core.Tests
 {
     public class CoverageTests
