@@ -105,7 +105,31 @@ namespace Coverlet.Core.Instrumentation
                     catch (Exception ex)
                     {
                         WriteLog($"Failed to create new hits file '{HitsFilePath}'\n{ex}");
+                        /*
+                            On .NET core we don't have app domains, so we expect only one flush:
+                            1) on msbuild/.net tool on process exits
+                            2) on collector during in-proc flush or process exits for users with old Test SDK https://github.com/microsoft/vstest/pull/2221
+
+                            This fix a race condition bug(https://github.com/tonerdo/coverlet/issues/736) where
+                            1) Tests ends and in-proc collector flush file to disk
+                            2) Out-of-proc collector call GetCoverageResult() and try to open hits file but at the same time testhost process
+                               closes and on process exit event we try flush hits file again. 
+                               If these two events overlap we have a race with IOException 'The process cannot access the file XXX because it is being used by another process.' on hit file
+
+                            We can have more than one flush only for .NET Framework application with multi domain, on domain unload
+                        */
+                        if (IsDotNetCore())
+                        {
+                            return;
+                        }
+
                         failedToCreateNewHitsFile = true;
+
+                        static bool IsDotNetCore()
+                        {
+                            // object for .NET Framework is inside mscorlib.dll
+                            return Path.GetFileName(typeof(object).Assembly.Location) == "System.Private.CoreLib.dll";
+                        }
                     }
 
                     if (failedToCreateNewHitsFile)
