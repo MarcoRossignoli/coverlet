@@ -52,7 +52,7 @@ namespace Coverlet.Integration.Tests
 
         private protected ClonedTemplateProject CloneTemplateProject(bool cleanupOnDispose = true, string testSDKVersion = "16.5.0")
         {
-            DirectoryInfo finalRoot = Directory.CreateDirectory($"{Guid.NewGuid().ToString("N").Substring(0, 6)}{Interlocked.Increment(ref _folderSuffix)}");
+            DirectoryInfo finalRoot = Directory.CreateDirectory($"{Guid.NewGuid().ToString("N")}{Interlocked.Increment(ref _folderSuffix)}");
             foreach (string file in (Directory.GetFiles($"../../../../coverlet.integration.template", "*.cs")
                     .Union(Directory.GetFiles($"../../../../coverlet.integration.template", "*.csproj")
                     .Union(Directory.GetFiles($"../../../../coverlet.integration.template", "nuget.config")))))

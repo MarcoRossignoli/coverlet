@@ -3,8 +3,5 @@
   "version": "1.7.2-preview.{height}",
   "publicReleaseRefSpec": [
     "^refs/heads/master$"
-  ],
-  "nugetPackageVersion":{
-    "semVer": 2
-  }
+  ]
 }
