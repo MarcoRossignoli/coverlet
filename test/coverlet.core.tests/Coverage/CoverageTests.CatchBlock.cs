@@ -74,5 +74,40 @@ namespace Coverlet.Core.Tests
                 File.Delete(path);
             }
         }
+
+        [Fact]
+        public void Issue_823()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                FunctionExecutor.RunInProcess(async (string[] pathSerialize) =>
+                {
+                    CoveragePrepareResult coveragePrepareResult = await TestInstrumentationHelper.Run<CatchBlock>(instance =>
+                    {
+                        instance.Issue_823(5);
+                        try
+                        {
+                            instance.Issue_823(10);
+                        }
+                        catch { }
+                        try
+                        {
+                            instance.Issue_823(11);
+                        }
+                        catch { }
+                        return Task.CompletedTask;
+                    }, persistPrepareResultToFile: pathSerialize[0]);
+                    return 0;
+                }, new string[] { path });
+
+                var res = TestInstrumentationHelper.GetCoverageResult(path);
+                res.GenerateReport(show: true);
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
     }
 }

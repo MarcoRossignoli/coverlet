@@ -1,5 +1,6 @@
 ﻿// Remember to use full name because adding new using directives change line numbers
 
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace Coverlet.Core.Samples.Tests
@@ -301,7 +302,7 @@ namespace Coverlet.Core.Samples.Tests
                 {
                     return int.Parse(str);
                 }
-                catch 
+                catch
                 {
                     await Task.Delay(0);
                     if (condition)
@@ -317,7 +318,7 @@ namespace Coverlet.Core.Samples.Tests
             }
             catch
             {
-                await Task.Delay(0); 
+                await Task.Delay(0);
                 throw;
             }
         }
@@ -348,6 +349,44 @@ namespace Coverlet.Core.Samples.Tests
                 await ParseAsync_WithNestedCatch(nameof(Test), condition);
             }
             catch { }
+        }
+
+        private Task<int> SaveChangesAsync(int val)
+        {
+            if (val == 10)
+            {
+                throw new Microsoft.EntityFrameworkCore.DbUpdateException("10", new System.Exception());
+            }
+            else if (val == 11)
+            {
+                throw new Microsoft.EntityFrameworkCore.DbUpdateException("11", new System.Exception());
+            }
+            else
+                return Task.FromResult(100);
+        }
+
+        private System.Exception GetException(DbUpdateException originalException)
+        {
+            return originalException.Message == "10" ? originalException : null;
+        }
+
+        public async Task<int> Issue_823(int val)
+        {
+            try
+            {
+                return await SaveChangesAsync(val);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException originalException)
+            {
+                var exception = GetException(originalException);
+
+                if (exception != null)
+                {
+                    throw exception;
+                }
+
+                throw;
+            }
         }
     }
 }
