@@ -17,6 +17,17 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 namespace Coverlet.Collector.DataCollection
 {
     /// <summary>
+    /// DynamicCoverageDataCollectorWithAttachmentProcessor implements DynamicCoverageDataCollector and registers the attachment processor.
+    /// </summary>
+    [DataCollectorTypeUri(CoverletConstants.DefaultUri)]
+    [DataCollectorFriendlyName(CoverletConstants.FriendlyName)]
+    [DataCollectorAttachmentProcessor(typeof(DataCollectorAttachmentProcessor))]
+    public class CoverletCoverageCollectorWithAttachmentProcessor : CoverletCoverageCollector
+    {
+
+    }
+    
+    /// <summary>
     /// Coverlet coverage out-proc data collector.
     /// </summary>
     [DataCollectorTypeUri(CoverletConstants.DefaultUri)]
